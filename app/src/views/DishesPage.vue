@@ -6,6 +6,7 @@ import {computed, onMounted, ref} from 'vue'
 import type { Dish } from '@/types'
 import {useRoute} from 'vue-router'
 import {useDishStore} from '@/stores/DishStore'
+import EditDishForm from "@/components/EditDishForm.vue";
 
 const dishStore = useDishStore()
 const filterText = ref<string>('')
@@ -27,7 +28,10 @@ const filterText = ref<string>('')
 //   },
 // ])
 const dishList = dishStore.list
-const showNewForm = ref<boolean>(false)
+
+type ShowFormState = '' | 'new' | 'edit'
+
+const showForm = ref<ShowFormState>('')
 
 
 const filteredDishList = computed((): Dish[] => {
@@ -48,8 +52,20 @@ const addDish = (payload: Dish) => {
   hideForm()
 }
 const hideForm = () => {
-  showNewForm.value = false
+  showForm.value = ''
 }
+const dishToEdit = ref<Dish | null>(null)
+const editDish = (payload: Dish) => {
+  dishToEdit.value = payload
+  showForm.value = 'edit'
+}
+const updateDish = (payload: Dish) => {
+  // console.log(payload.name)
+  dishStore.updateDish(payload)
+  hideForm()
+}
+
+
 
 const updateFilterText = (event: KeyboardEvent) => {
   // console.log(event.target as HTMLInputElement)
@@ -62,7 +78,9 @@ const updateFilterText = (event: KeyboardEvent) => {
 onMounted(() => {
   const route = useRoute()
   if (route.query.new) {
-    showNewForm.value = true
+    showForm.value = 'new'
+  } else if (route.query.edit) {
+    showForm.value = 'edit'
   }
 })
 </script>
@@ -78,7 +96,7 @@ onMounted(() => {
         <h1 class="title">Dishes</h1>
 
         <!-- CTA Bar -->
-        <nav v-if="!showNewForm" class="level">
+        <nav v-if="showForm === ''" class="level">
           <div class="level-left">
             <div class="level-item">
               <p class="subtitle is-5">
@@ -87,7 +105,7 @@ onMounted(() => {
             </div>
 
             <p class="level-item">
-              <button @click="showNewForm = true" class="button is-success">New</button>
+              <button @click="showForm = 'new'" class="button is-success">New</button>
             </p>
 
             <div class="level-item is-hidden-tablet-only">
@@ -106,12 +124,15 @@ onMounted(() => {
         </nav>
 
         <!-- New Dish Form -->
-        <NewDishForm v-if="showNewForm" @add-new-dish="addDish" @cancel-new-dish="hideForm" />
+        <NewDishForm v-if="showForm === 'new'" @add-new-dish="addDish" @cancel-new-dish="hideForm" />
+
+        <!-- New Dish Form -->
+        <EditDishForm v-else-if="showForm === 'edit' && dishToEdit" @edit-dish="updateDish" @cancel-edit-dish="hideForm" :dish="dishToEdit" />
 
         <!-- Display Results -->
         <div v-else class="columns is-multiline">
           <div v-for="item in filteredDishList" class="column is-full" :key="`item-${item}`">
-            <DishCard :dish="item" @delete-dish="dishStore.deleteDish" />
+            <DishCard :dish="item" @edit-dish="editDish" @delete-dish="dishStore.deleteDish" />
           </div>
         </div>
       </div>

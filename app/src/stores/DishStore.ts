@@ -28,6 +28,16 @@ export const useDishStore = defineStore('DishStore', {
     }),
     // Computed
     getters: {
+        // getDishById: (state) => (id: string): Dish | undefined => {
+        //     return state.list.find((dish: Dish) => {
+        //         return dish.id === id
+        //     })
+        // },
+        getDishById: (state) => {
+          return (dishId: string) => {
+              return state.list.find((dish: Dish) => dish.id === dishId)
+          }
+        },
         numberOfDishes: (state): number => {
             return state.list.length
         }
@@ -36,6 +46,13 @@ export const useDishStore = defineStore('DishStore', {
     actions: {
         addDish(payload: Dish) {
             this.list.push(payload)
+        },
+        updateDish(payload: Dish) {
+            console.log('yo yo')
+            const index = this.list.findIndex((dish: Dish) => {
+                return dish.id === payload.id
+            })
+            this.list.splice(index, 1, payload)
         },
         deleteDish(payload: Dish) {
             this.list = this.list.filter((dish: Dish) => {
