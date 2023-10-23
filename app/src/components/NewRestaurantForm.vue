@@ -1,7 +1,9 @@
-<script>
+<script lang="ts">
 import { v4 as uuidv4 } from 'uuid'
+import {defineComponent} from 'vue'
+import {restaurantStatusList} from '@/constants'
 
-export default {
+export default defineComponent({
   emits: ['add-new-restaurant', 'cancel-new-restaurant'],
   data: () => ({
     newRestaurant: {
@@ -11,8 +13,9 @@ export default {
       website: '',
       status: 'Want to Try',
     },
+    restaurantStatusList: restaurantStatusList,
   }),
-}
+})
 </script>
 
 <template>
